@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<part class="form">
+  <style>
+    <property name="Geometry">{558,298,390,303}</property>
+    <property name="Caption">[Maibox options]</property>
+    <property name="Font">
+      <font name="Georgia" width="0" height="-20M3.33" weight="400" charset="204"/>
+    </property>
+    <property name="FormType">[dlgModal]</property>
+    <property name="lClipper">.F.</property>
+    <property name="lExitOnEnter">.F.</property>
+    <property name="lDebug">.F.</property>
+    <property name="Variables">{nBox}</property>
+    <property name="FromStyle">[Popup]</property>
+    <property name="Icon">[]</property>
+    <property name="BackColor">3946816</property>
+    <property name="NoModal">.F.</property>
+    <property name="SystemMenu">.T.</property>
+    <property name="Minimizebox">.F.</property>
+    <property name="Maximizebox">.F.</property>
+    <property name="AbsAlignent">.T.</property>
+    <property name="SizeBox">.T.</property>
+    <property name="Visible">.T.</property>
+    <property name="3DLook">.F.</property>
+    <property name="Clipsiblings">.F.</property>
+    <property name="Clipchildren">.F.</property>
+  </style>
+  <method name="onFormInit">
+    <![CDATA[parameters oForm, n
+private aBox
+if n != Nil
+  aBox := aBoxes[n]
+  nBox := n
+  m_title := aBox[1]
+  m_addr := aBox[2]
+  m_login := aBox[5]
+  m_pass := aBox[6]
+  m_refr := aBox[7]
+else
+  nBox := 0
+  m_title := m_addr := m_login := m_pass := ""
+  m_refr := 30
+endif
+]]>
+  </method>
+  <method name="onDlgActivate">
+    <![CDATA[hwg_SetColorinFocus( oDlg,, 13172680 )
+]]>
+  </method>
+  <part class="label">
+    <style>
+      <property name="Geometry">{12,20,59,22}</property>
+      <property name="Caption">[Title:]</property>
+      <property name="TextColor">15395562</property>
+      <property name="Transparent">.T.</property>
+    </style>
+  </part>
+  <part class="editbox">
+    <style>
+      <property name="Geometry">{72,20,295,28}</property>
+      <property name="BackColor">15395562</property>
+      <property name="nMaxLength">48</property>
+      <property name="varName">[m_title]</property>
+    </style>
+  </part>
+  <part class="label">
+    <style>
+      <property name="Geometry">{12,52,154,22}</property>
+      <property name="Caption">[Address and port:]</property>
+      <property name="TextColor">15395562</property>
+      <property name="BackColor">3946816</property>
+    </style>
+  </part>
+  <part class="editbox">
+    <style>
+      <property name="Geometry">{72,76,293,28}</property>
+      <property name="BackColor">15395562</property>
+      <property name="nMaxLength">128</property>
+      <property name="varName">[m_addr]</property>
+    </style>
+  </part>
+  <part class="label">
+    <style>
+      <property name="Geometry">{12,116,60,22}</property>
+      <property name="Caption">[Login]</property>
+      <property name="TextColor">15395562</property>
+      <property name="BackColor">3946816</property>
+    </style>
+  </part>
+  <part class="editbox">
+    <style>
+      <property name="Geometry">{188,116,177,28}</property>
+      <property name="BackColor">15395562</property>
+      <property name="nMaxLength">32</property>
+      <property name="varName">[m_login]</property>
+    </style>
+  </part>
+  <part class="label">
+    <style>
+      <property name="Geometry">{12,144,95,22}</property>
+      <property name="Caption">[Password:]</property>
+      <property name="TextColor">15395562</property>
+      <property name="BackColor">3946816</property>
+    </style>
+  </part>
+  <part class="editbox">
+    <style>
+      <property name="Geometry">{224,144,141,28}</property>
+      <property name="BackColor">15395562</property>
+      <property name="Password">.T.</property>
+      <property name="nMaxLength">32</property>
+      <property name="varName">[m_pass]</property>
+    </style>
+  </part>
+  <part class="label">
+    <style>
+      <property name="Geometry">{12,192,190,22}</property>
+      <property name="Caption">[Refresh Interval (min):]</property>
+      <property name="TextColor">15395562</property>
+      <property name="BackColor">3946816</property>
+    </style>
+  </part>
+  <part class="editbox">
+    <style>
+      <property name="Geometry">{284,192,80,28}</property>
+      <property name="BackColor">15395562</property>
+      <property name="cPicture">[999]</property>
+      <property name="varName">[m_refr]</property>
+    </style>
+  </part>
+  <part class="button">
+    <style>
+      <property name="Geometry">{65,252,80,32}</property>
+      <property name="Caption">[Ok]</property>
+    </style>
+    <method name="onClick">
+      <![CDATA[private aBox
+if nBox == 0
+  Aadd( aBoxes, {,,"","",,,,0,0,0,.F.} )
+  nBox := Len(aBoxes)
+endif
+aBox := aBoxes[nBox]
+aBox[1] := Trim(m_title)
+aBox[2] := Trim(m_addr)
+aBox[5] := Trim(m_login)
+aBox[6] := Trim(m_pass)
+aBox[7] := m_refr
+aBox[11] := .F.
+lChgConfig := .T.
+oBrw1:Refresh()
+hwg_EndDialog()
+]]>
+    </method>
+  </part>
+  <part class="button">
+    <style>
+      <property name="Geometry">{248,252,80,32}</property>
+      <property name="Caption">[Cancel]</property>
+    </style>
+    <method name="onClick">
+      <![CDATA[hwg_EndDialog()
+]]>
+    </method>
+  </part>
+</part>

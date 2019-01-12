@@ -1,0 +1,387 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<part class="form">
+  <style>
+    <property name="Geometry">{379,134,654,353}</property>
+    <property name="Caption">[Mail agent]</property>
+    <property name="Font">
+      <font name="Georgia" width="0" height="-18M3.00" weight="400" charset="204"/>
+    </property>
+    <property name="FormType">[Main]</property>
+    <property name="lClipper">.F.</property>
+    <property name="lExitOnEnter">.F.</property>
+    <property name="lDebug">.F.</property>
+    <property name="Variables">
+{oForm,cFormPath,aBoxes,nInterval,lChgConfig,oMenuTray,lNewItems,oIcon2,oBmpMark,oBmpCheck,oMenu}
+    </property>
+    <property name="FromStyle">[Popup]</property>
+    <property name="Icon">[images/mail]</property>
+    <property name="BackColor">-1</property>
+    <property name="NoModal">.F.</property>
+    <property name="SystemMenu">.T.</property>
+    <property name="Minimizebox">.T.</property>
+    <property name="Maximizebox">.T.</property>
+    <property name="AbsAlignent">.T.</property>
+    <property name="SizeBox">.T.</property>
+    <property name="Visible">.T.</property>
+    <property name="3DLook">.F.</property>
+    <property name="Clipsiblings">.F.</property>
+    <property name="Clipchildren">.F.</property>
+  </style>
+  <method name="common">
+    <![CDATA[Function RestoreWin
+private oWnd := HWindow():GetMain()
+if lNewItems
+  lNewItems := .F.
+  hwg_ShellModifyicon(oWnd:handle, oWnd:oIcon:handle )
+endif
+oWnd:Restore()
+ENDFUNC
+
+Function MsgDel
+Parameters i
+private j := 0, arr := { ltrim(str(i)) }
+do while ++j <= Len(oBrw2:aArray)
+  if oBrw2:aArray[j,6]
+    Aadd(arr, oBrw2:aArray[j,5])
+    oBrw2:aArray[j,1] := oBrw2:aArray[j,3] := ""
+    oBrw2:aArray[j,2] := "Deleting..."
+  endif
+enddo
+if len(arr) > 1
+  oBrw2:Refresh()
+  pGo("delmsgs", arr)
+  aBoxes[i,8] := aBoxes[i,7] * 60
+  aBoxes[i,9] := 1
+endif
+ENDFUNC
+
+Function BoxRefresh
+Parameters i
+if valtype(i) == "N"
+  aBoxes[i,8] := aBoxes[i,7] * 60
+  aBoxes[i,9] := 1
+  pGo("getinfo", {Ltrim(Str(i))})
+else
+  i := 0
+  do while ++i <= Len( aBoxes )
+    aBoxes[i,8] := aBoxes[i,7] * 60
+    aBoxes[i,9] := 1
+    pGo("getinfo", {Ltrim(Str(i))})
+  enddo
+endif
+ENDFUNC
+
+Function cnv
+Parameters cLine
+private nPos, cp
+if (nPos := At("?=",cLine)) > 0
+  cLine := Substr(cLine,3,Len(cLine)-4)
+  if (nPos := At("?B?",cLine)) > 0 .or. (nPos := At("?b?",cLine)) > 0
+    cp := Lower(Left(cLine,nPos-1))
+    cLine := hb_Base64Decode( Substr(cLine,nPos+3) )
+    if cp == "koi8-r"
+      cLine := hb_strToUtf8( cLine,"RUKOI8" )
+    elseif cp == "windows-1251"
+      cLine := hb_strToUtf8( cLine,"RU1251" )
+    else
+      hwg_writelog( cp )
+    endif
+  endif
+endif
+Return cLine
+ENDFUNC
+
+Function tmfunc
+Private i := 0, cRes, aRes, lRefr := .F., lIcon, cUnseen, cAll, oWnd
+oWnd := HWindow():GetMain()
+lIcon := !hwg_IsWindowVisible(oWnd:handle)
+do while ++i <= Len( aBoxes )
+  if aBoxes[i,7] > 0
+    aBoxes[i,8] -= nInterval
+    if aBoxes[i,8] <= 0
+      aBoxes[i,8] := aBoxes[i,7] * 60
+      aBoxes[i,9] := 1
+      pGo("getinfo", {Ltrim(Str(i))})
+    elseif aBoxes[i,9] == 1
+      cRes := fGo("getresult", {Ltrim(Str(i))})
+      hb_jsonDecode( cRes, @aRes )
+      if aRes[1] >= 0
+        aBoxes[i,9] := 0
+        cUnseen := Ltrim(Str(aRes[1]))
+        cAll := Ltrim(Str(aRes[2]))
+        if aBoxes[i,3] != cUnseen .or. aBoxes[i,4] != cAll .or. aBoxes[i,10] != aRes[3]
+          aBoxes[i,3] := cUnseen
+          aBoxes[i,4] := cAll
+          aBoxes[i,10] := aRes[3]
+          if i == oBrw1:nCurrent
+            callfunc("GETMSGS",,oForm:aFuncs)
+          endif
+          lRefr := .T.
+          aBoxes[i,11] := (aRes[1] > 0)
+        endif
+      elseif aRes[1] == -1 .and. !lNewItems
+        aBoxes[i,11] := .F.
+      elseif aRes[1] == -2
+        aBoxes[i,9] := 0
+        aBoxes[i,3] := aBoxes[i,4] := "error"
+        if i == oBrw1:nCurrent
+          oBrw2:aArray := ""
+          if !lIcon
+            oBrw2:Refresh()
+          endif
+        endif
+      endif
+    endif
+  endif
+enddo
+if !lIcon
+  i := oBrw1:nCurrent
+  oLblTime:SetText( Padl(Ltrim(Str(Int(aBoxes[i,8]/60))),2,'0') + ":" + Padl(Ltrim(Str(Int(aBoxes[i,8]%60))),2,'0') )
+endif
+if lRefr
+  if !lIcon
+    oBrw1:Refresh()
+  endif
+  if lIcon .and. oIcon2 != Nil
+    lNewItems := .T.
+    hwg_ShellModifyicon(oWnd:handle, oIcon2:handle )
+  endif
+endif
+ENDFUNC
+
+Function getMsgs
+Private i := oBrw1:nCurrent, j, cRes, aRes, dDate
+if i > 0 .and. i <= Len(aBoxes) .and. Val(aBoxes[i,4]) > 0
+  aBoxes[i,11] := .F.
+  cRes := fGo("getmsgs", {Ltrim(Str(i))})
+  //hwg_writelog(cRes)
+  hb_jsonDecode( '"'+cRes+'"', @cRes )
+  hb_jsonDecode( cRes, @aRes )
+  j := 0
+  do while ++j <= Len(aRes[1])
+    if left(aRes[1,j,1],2) == "=?"
+      aRes[1,j,1] := callfunc("CNV",{aRes[1,j,1]},oForm:aFuncs)
+    endif
+    if left(aRes[1,j,2],2) == "=?"
+      aRes[1,j,2] := callfunc("CNV",{aRes[1,j,2]},oForm:aFuncs)
+    endif
+    dDate := aRes[1,j,3]
+    dDate := Stod( Left(dDate,4)+Substr(dDate,6,2)+Substr(dDate,9,2) )
+    aRes[1,j,3] := Iif(dDate == Date(), Substr(aRes[1,j,3],12,5), Dtoc(dDate) )
+    Aadd( aRes[1,j],.F. )
+  enddo
+  oBrw2:aArray := ASort(aRes[1],,,{|z,y|Val(z[5])>Val(y[5])})
+  if hwg_IsWindowVisible(HWindow():GetMain():handle)
+    oBrw1:RefreshLine()
+    oBrw2:Refresh()
+    oLblTime:SetText( Padl(Ltrim(Str(Int(aBoxes[i,8]/60))),2,'0') + ":" + Padl(Ltrim(Str(Int(aBoxes[i,8]%60))),2,'0') )
+  endif
+endif
+ENDFUNC
+
+Function SeleUnseen
+if Empty(oBrw2:aArray[oBrw2:nCurrent,3])
+  return {16777215, 0, 16777215, 0}
+elseif oBrw2:aArray[oBrw2:nCurrent,4] == "true"
+  return {8388608, 10674930, 8388608, 10674930}
+endif
+return {3355443, 15132390, 3355443, 15132390}
+ENDFUNC
+]]>
+  </method>
+  <method name="onFormInit">
+    <![CDATA[Parameters o, cTemp
+private oIni, oNode, i := 0
+oForm := o
+SET DATE FORMAT "dd.mm.yy"
+cFormPath := hb_fnameDir(oForm:cFormName)
+nInterval := 2
+lChgConfig := .F.
+lNewItems := .F.
+aBoxes := {}
+oIni := HXMLDoc():Read( "agent.ini" )
+if !Empty( oIni ) .and. !Empty( oIni:aItems )
+  do while ++i <= Len( oIni:aItems[1]:aItems )
+    oNode := oIni:aItems[1]:aItems[i]
+    if oNode:title == "mbox"
+      Aadd( aBoxes, { oNode:GetAttribute("title","C"), ;
+        oNode:GetAttribute("address","C"), "", "", ;
+        oNode:GetAttribute("login","C"), ;
+        Iif( !Empty(cTemp:=oNode:GetAttribute("pass","C")),hb_Base64Decode(cTemp),""), ;
+        oNode:GetAttribute("refresh","N",30), ;
+        0, 0, 0, .F. } )
+    endif
+  enddo
+endif
+oIcon2 := HIcon():AddFile("images/mail2")
+oBmpMark := HBitmap():AddFile("images/mark.bmp")
+oBmpCheck := HBitmap():AddStandard( Iif(hwg_Version(4)==0,32760,"gtk-apply") )
+]]>
+  </method>
+  <method name="onDlgActivate">
+    <![CDATA[Private i := 0, oWnd
+oBrw2:bcolor := oBrw2:bcolorSel := oBrw2:htbColor := 15132390
+oBrw2:tColorSel := oBrw2:httColor := 0
+oBrw2:aArray := {}
+oBrw2:AddColumn(HColumn():New("",{|v,o|o:aArray[o:nCurrent,6]},"L",1,0))
+oBrw2:aColumns[1]:aBitmaps := { { {|l|l}, oBmpCheck } }
+oBrw2:aColumns[1]:bColorBlock := {||{0,16777215,0,16777215}}
+oBrw2:AddColumn(HColumn():New("From",{|v,o|o:aArray[o:nCurrent,1]},"C",20,0))
+oBrw2:AddColumn(HColumn():New("Subject",{|v,o|o:aArray[o:nCurrent,2]},"C",40,0))
+oBrw2:AddColumn(HColumn():New("Date",{|v,o|o:aArray[o:nCurrent,3]},"C",10,0,,,2))
+oBrw2:aColumns[2]:bColorBlock := oBrw2:aColumns[3]:bColorBlock := oBrw2:aColumns[4]:bColorBlock := {||SeleUnseen()}
+oBrw2:bEnter := {|o,col,n|o:aArray[n,6]:=!o:aArray[n,6],o:RefreshLine()}
+
+oBrw1:lDispHead := .F.
+oBrw1:bcolor := 15132390
+oBrw1:bcolorSel := oBrw1:htbColor := 8404992
+oBrw1:aArray := aBoxes
+oBrw1:AddColumn(HColumn():New("",{|v,o|o:aArray[o:nCurrent,11]},"L",1,0))
+oBrw1:AddColumn(HColumn():New("",{|v,o|o:aArray[o:nCurrent,1]},"C",24,0))
+oBrw1:AddColumn(HColumn():New("",{|v,o|o:aArray[o:nCurrent,3]},"C",6,0,,,2))
+oBrw1:AddColumn(HColumn():New("",{|v,o|o:aArray[o:nCurrent,4]},"C",6,0,,,2))
+oBrw1:AddColumn(HColumn():New("",{|v,o|" "},"C",1,0))
+oBrw1:aColumns[1]:aBitmaps := { { {|l|l}, oBmpMark } }
+oBrw1:bPosChanged := {||getMsgs()}
+
+do while ++i <= Len( aBoxes )
+  pGo("setbox",{LTrim(Str(i)),aBoxes[i,1],aBoxes[i,2],aBoxes[i,5],aBoxes[i,6]})
+enddo
+
+oWnd := HWindow():GetMain()
+
+oMenu := Hwg_ContextMenu()
+  Hwg_DefineMenuItem( "Add mailbox",, {||HFormTmpl():Read( cFormPath + "boxcfg.xml" ):Show()} )
+  Hwg_DefineMenuItem( "Edit mailbox",, {||HFormTmpl():Read( cFormPath + "boxcfg.xml" ):Show(,oBrw1:nCurrent)} )
+  Hwg_DefineMenuItem()
+  Hwg_DefineMenuItem( "Check current",, {||BoxRefresh(oBrw1:nCurrent)} )
+  Hwg_DefineMenuItem( "Check all",, {||BoxRefresh()} )
+  Hwg_DefineMenuItem()
+  Hwg_DefineMenuItem( "Delete messages",, {||MsgDel(oBrw1:nCurrent)} )
+  Hwg_DefineMenuItem()
+  Hwg_DefineMenuItem( "Exit",, {||hwg_EndWindow()} )
+Hwg_EndMenu()
+
+oMenuTray := Hwg_ContextMenu()
+  Hwg_DefineMenuItem( "Open",, {||RestoreWin()} )
+  Hwg_DefineMenuItem()
+  Hwg_DefineMenuItem( "Exit",, {||hwg_EndWindow()} )
+Hwg_EndMenu()
+
+oWnd:InitTray( oWnd:oIcon,{||RestoreWin()},oMenuTray,"Mail agent" )
+
+HTimer():New( ,, nInterval*1000, {||tmfunc()} )
+tmfunc(oBrw1)
+]]>
+  </method>
+  <method name="onFormExit">
+    <![CDATA[private oIni, oNode, i := 0, oNode1
+if lChgConfig
+  oIni := HXMLDoc():New()
+  oIni:Add( oNode := HXMLNode():New( "initd" ) )
+  do while ++i <= Len(aBoxes)
+    oNode1 := HXMLNode():New( "mbox", 1 )
+    oNode1:SetAttribute( "title",aBoxes[i,1] )
+    oNode1:SetAttribute( "address",aBoxes[i,2] )
+    oNode1:SetAttribute( "login",aBoxes[i,5] )
+    if !Empty(aBoxes[i,6])
+      oNode1:SetAttribute( "pass", hb_Base64Encode(aBoxes[i,6]) )
+    endif
+    oNode1:SetAttribute( "refresh",Ltrim(Str(aBoxes[i,7])) )
+    oNode:Add( oNode1 )
+  enddo
+  oIni:Save( "agent.ini" )
+endif
+]]>
+  </method>
+  <part class="toolbar">
+    <style>
+      <property name="Geometry">{0,0,64,158}</property>
+      <property name="Name">[oPanel]</property>
+      <property name="BackColor">14408667</property>
+    </style>
+    <part class="ownerbutton">
+      <style>
+        <property name="Geometry">{0,0,64,32}</property>
+        <property name="Caption">[]</property>
+        <property name="Anchor">8</property>
+        <property name="Flat">.T.</property>
+        <property name="styles">
+          <hstyle colors="{15790320,12763842}" orient="1"/>
+          <hstyle colors="{15790320}" orient="1" border="2" tcolor="0"/>
+          <hstyle colors="{15790320}" orient="1"/>
+        </property>
+        <property name="BtnBitmap">[images/menu.bmp]</property>
+        <property name="Transparent">.T.</property>
+      </style>
+      <method name="onClick">
+        <![CDATA[oMenu:Show(HWindow():GetMain())
+]]>
+      </method>
+    </part>
+    <part class="label">
+      <style>
+        <property name="Geometry">{2,38,60,24}</property>
+        <property name="Name">[oLblTime]</property>
+        <property name="Caption">[]</property>
+        <property name="font">
+          <font name="Georgia" width="0" height="-16M2.67" weight="400" charset="204"/>
+        </property>
+        <property name="Justify">[Center]</property>
+        <property name="Transparent">.T.</property>
+      </style>
+    </part>
+    <part class="ownerbutton">
+      <style>
+        <property name="Geometry">{0,70,64,32}</property>
+        <property name="Caption">[]</property>
+        <property name="Anchor">8</property>
+        <property name="Flat">.T.</property>
+        <property name="styles">
+          <hstyle colors="{15790320,12763842}" orient="1"/>
+          <hstyle colors="{15790320}" orient="1" border="2" tcolor="0"/>
+          <hstyle colors="{15790320}" orient="1"/>
+        </property>
+        <property name="BtnBitmap">[images/refresh.bmp]</property>
+        <property name="Transparent">.T.</property>
+        <property name="trColor">0</property>
+      </style>
+      <method name="onClick">
+        <![CDATA[BoxRefresh(oBrw1:nCurrent)
+]]>
+      </method>
+    </part>
+  </part>
+  <part class="browse">
+    <style>
+      <property name="Geometry">{66,0,586,158}</property>
+      <property name="Name">[oBrw1]</property>
+      <property name="Anchor">11</property>
+      <property name="BrwType">[Array]</property>
+    </style>
+  </part>
+  <part class="splitter">
+    <style>
+      <property name="Geometry">{4,160,645,6}</property>
+      <property name="lVertical">.F.</property>
+      <property name="Anchor">10</property>
+      <property name="hstyle">
+        <hstyle colors="{15790320,12763842}" orient="1"/>
+      </property>
+      <property name="ALeft">{oPanel,oBrw1}</property>
+      <property name="ARight">{oBrw2}</property>
+      <property name="nFrom">110</property>
+    </style>
+  </part>
+  <part class="browse">
+    <style>
+      <property name="Geometry">{0,168,650,183}</property>
+      <property name="Name">[oBrw2]</property>
+      <property name="Anchor">15</property>
+      <property name="hstylehead">
+        <hstyle colors="{15790320,12763842}" orient="1"/>
+      </property>
+      <property name="BrwType">[Array]</property>
+    </style>
+  </part>
+</part>
