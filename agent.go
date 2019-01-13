@@ -172,6 +172,9 @@ func setBox(p []string) string {
 
 	i, _ := strconv.Atoi(p[0])
 	i--
+	for i > len(pBoxes) {
+		pBoxes = append(pBoxes, embox{})
+	}
 	pBoxes[i] = embox{Title: p[1], Addr: p[2], Login: p[3], Pass: p[4], Trash: p[5], Unseen: -1, Total: -1}
 
 	return ""

@@ -169,12 +169,16 @@ hwg_CenterWindow( oDlg:handle )
       <property name="Caption">[Ok]</property>
     </style>
     <method name="onClick">
-      <![CDATA[private aBox
+      <![CDATA[#define ES_PASSWORD  32
+#define DS_CENTER  2048
+private aBox, cPass, lUpd
 if nBox == 0
   Aadd( aBoxes, {,,"","",,,,0,0,0,.F.,"",""} )
   nBox := Len(aBoxes)
+  lNew := .T.
 endif
 aBox := aBoxes[nBox]
+lUpd := ( !(aBox[1] == Trim(m_title)) .or. !(aBox[2] == Trim(m_addr)) .or. !(aBox[5] == Trim(m_login)) .or. !(aBox[6] == Trim(m_pass)) )
 aBox[1] := Trim(m_title)
 aBox[2] := Trim(m_addr)
 aBox[5] := Trim(m_login)
@@ -184,6 +188,12 @@ aBox[11] := .F.
 aBox[12] := Trim(m_trash)
 aBox[13] := Trim(m_web)
 lChgConfig := .T.
+if lUpd
+  if Empty( cPass := aBoxes[i,6] )
+    cPass := hwg_MsgGet( aBoxes[i,1],"Input password",ES_PASSWORD,,,DS_CENTER )
+  endif
+  pGo("setbox",{LTrim(Str(i)),aBoxes[i,1],aBoxes[i,2],aBoxes[i,5],cPass,aBoxes[i,12]})
+endif
 oBrw1:Refresh()
 hwg_EndDialog()
 ]]>
