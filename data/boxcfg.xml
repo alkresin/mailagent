@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <part class="form">
   <style>
-    <property name="Geometry">{558,298,390,303}</property>
+    <property name="Geometry">{558,298,548,386}</property>
     <property name="Caption">[Maibox options]</property>
     <property name="Font">
       <font name="Georgia" width="0" height="-20M3.33" weight="400" charset="204"/>
@@ -13,7 +13,7 @@
     <property name="Variables">{nBox}</property>
     <property name="FromStyle">[Popup]</property>
     <property name="Icon">[]</property>
-    <property name="BackColor">3946816</property>
+    <property name="BackColor">14408667</property>
     <property name="NoModal">.F.</property>
     <property name="SystemMenu">.T.</property>
     <property name="Minimizebox">.F.</property>
@@ -36,28 +36,31 @@ if n != Nil
   m_login := aBox[5]
   m_pass := aBox[6]
   m_refr := aBox[7]
+  m_trash := aBox[12]
+  m_web := aBox[13]
 else
   nBox := 0
-  m_title := m_addr := m_login := m_pass := ""
+  m_title := m_addr := m_login := m_pass := m_trash := m_web := ""
   m_refr := 30
 endif
 ]]>
   </method>
   <method name="onDlgActivate">
     <![CDATA[hwg_SetColorinFocus( oDlg,, 13172680 )
+hwg_CenterWindow( oDlg:handle )
 ]]>
   </method>
   <part class="label">
     <style>
-      <property name="Geometry">{12,20,59,22}</property>
+      <property name="Geometry">{12,20,59,24}</property>
       <property name="Caption">[Title:]</property>
-      <property name="TextColor">15395562</property>
+      <property name="TextColor">2236962</property>
       <property name="Transparent">.T.</property>
     </style>
   </part>
   <part class="editbox">
     <style>
-      <property name="Geometry">{72,20,295,28}</property>
+      <property name="Geometry">{228,20,294,32}</property>
       <property name="BackColor">15395562</property>
       <property name="nMaxLength">48</property>
       <property name="varName">[m_title]</property>
@@ -65,15 +68,15 @@ endif
   </part>
   <part class="label">
     <style>
-      <property name="Geometry">{12,52,154,22}</property>
+      <property name="Geometry">{12,60,154,24}</property>
       <property name="Caption">[Address and port:]</property>
-      <property name="TextColor">15395562</property>
-      <property name="BackColor">3946816</property>
+      <property name="TextColor">2236962</property>
+      <property name="Transparent">.T.</property>
     </style>
   </part>
   <part class="editbox">
     <style>
-      <property name="Geometry">{72,76,293,28}</property>
+      <property name="Geometry">{228,60,294,32}</property>
       <property name="BackColor">15395562</property>
       <property name="nMaxLength">128</property>
       <property name="varName">[m_addr]</property>
@@ -81,15 +84,15 @@ endif
   </part>
   <part class="label">
     <style>
-      <property name="Geometry">{12,116,60,22}</property>
+      <property name="Geometry">{12,100,60,24}</property>
       <property name="Caption">[Login]</property>
-      <property name="TextColor">15395562</property>
-      <property name="BackColor">3946816</property>
+      <property name="TextColor">2236962</property>
+      <property name="Transparent">.T.</property>
     </style>
   </part>
   <part class="editbox">
     <style>
-      <property name="Geometry">{188,116,177,28}</property>
+      <property name="Geometry">{228,100,176,32}</property>
       <property name="BackColor">15395562</property>
       <property name="nMaxLength">32</property>
       <property name="varName">[m_login]</property>
@@ -97,15 +100,15 @@ endif
   </part>
   <part class="label">
     <style>
-      <property name="Geometry">{12,144,95,22}</property>
+      <property name="Geometry">{12,140,95,24}</property>
       <property name="Caption">[Password:]</property>
-      <property name="TextColor">15395562</property>
-      <property name="BackColor">3946816</property>
+      <property name="TextColor">2236962</property>
+      <property name="Transparent">.T.</property>
     </style>
   </part>
   <part class="editbox">
     <style>
-      <property name="Geometry">{224,144,141,28}</property>
+      <property name="Geometry">{228,140,176,32}</property>
       <property name="BackColor">15395562</property>
       <property name="Password">.T.</property>
       <property name="nMaxLength">32</property>
@@ -114,15 +117,47 @@ endif
   </part>
   <part class="label">
     <style>
-      <property name="Geometry">{12,192,190,22}</property>
-      <property name="Caption">[Refresh Interval (min):]</property>
-      <property name="TextColor">15395562</property>
-      <property name="BackColor">3946816</property>
+      <property name="Geometry">{12,180,178,24}</property>
+      <property name="Caption">[Trash folder name]</property>
+      <property name="TextColor">2236962</property>
+      <property name="Transparent">.T.</property>
     </style>
   </part>
   <part class="editbox">
     <style>
-      <property name="Geometry">{284,192,80,28}</property>
+      <property name="Geometry">{228,180,176,32}</property>
+      <property name="BackColor">15395562</property>
+      <property name="nMaxLength">64</property>
+      <property name="varName">[m_trash]</property>
+    </style>
+  </part>
+  <part class="label">
+    <style>
+      <property name="Geometry">{12,220,178,24}</property>
+      <property name="Caption">[Web address]</property>
+      <property name="TextColor">2236962</property>
+      <property name="Transparent">.T.</property>
+    </style>
+  </part>
+  <part class="editbox">
+    <style>
+      <property name="Geometry">{228,220,294,32}</property>
+      <property name="BackColor">15395562</property>
+      <property name="nMaxLength">128</property>
+      <property name="varName">[m_web]</property>
+    </style>
+  </part>
+  <part class="label">
+    <style>
+      <property name="Geometry">{12,260,210,24}</property>
+      <property name="Caption">[Refresh Interval (min):]</property>
+      <property name="TextColor">2236962</property>
+      <property name="Transparent">.T.</property>
+    </style>
+  </part>
+  <part class="editbox">
+    <style>
+      <property name="Geometry">{228,260,80,32}</property>
       <property name="BackColor">15395562</property>
       <property name="cPicture">[999]</property>
       <property name="varName">[m_refr]</property>
@@ -130,13 +165,13 @@ endif
   </part>
   <part class="button">
     <style>
-      <property name="Geometry">{65,252,80,32}</property>
+      <property name="Geometry">{65,332,100,32}</property>
       <property name="Caption">[Ok]</property>
     </style>
     <method name="onClick">
       <![CDATA[private aBox
 if nBox == 0
-  Aadd( aBoxes, {,,"","",,,,0,0,0,.F.} )
+  Aadd( aBoxes, {,,"","",,,,0,0,0,.F.,"",""} )
   nBox := Len(aBoxes)
 endif
 aBox := aBoxes[nBox]
@@ -146,6 +181,8 @@ aBox[5] := Trim(m_login)
 aBox[6] := Trim(m_pass)
 aBox[7] := m_refr
 aBox[11] := .F.
+aBox[12] := Trim(m_trash)
+aBox[13] := Trim(m_web)
 lChgConfig := .T.
 oBrw1:Refresh()
 hwg_EndDialog()
@@ -154,7 +191,7 @@ hwg_EndDialog()
   </part>
   <part class="button">
     <style>
-      <property name="Geometry">{248,252,80,32}</property>
+      <property name="Geometry">{395,332,100,32}</property>
       <property name="Caption">[Cancel]</property>
     </style>
     <method name="onClick">

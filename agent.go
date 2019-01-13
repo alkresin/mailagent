@@ -20,6 +20,7 @@ type embox struct {
 	Addr    string
 	Login   string
 	Pass    string
+	Trash   string
 	Unseen  int
 	Total   int
 	LastUid uint32
@@ -171,7 +172,7 @@ func setBox(p []string) string {
 
 	i, _ := strconv.Atoi(p[0])
 	i--
-	pBoxes[i] = embox{Title: p[1], Addr: p[2], Login: p[3], Pass: p[4], Unseen: -1, Total: -1}
+	pBoxes[i] = embox{Title: p[1], Addr: p[2], Login: p[3], Pass: p[4], Trash: p[5], Unseen: -1, Total: -1}
 
 	return ""
 }
@@ -247,12 +248,11 @@ func delMessages(i int, p []string) {
 	}
 
 	if !seqset.Empty() {
-		/*
-			if err := c.Copy(seqset, "TRASH"); err != nil {
-				sErr = fmt.Sprintln(err)
-				return
+		if pBoxes[i].Trash != "" {
+			if err := c.Copy(seqset, pBoxes[i].Trash); err != nil {
+				egui.WriteLog( fmt.Sprintln(err) )
 			}
-		*/
+		}
 		item := imap.FormatFlagsOp(imap.AddFlags, true)
 		flags := []interface{}{imap.DeletedFlag}
 		if err := c.Store(seqset, item, flags, nil); err != nil {

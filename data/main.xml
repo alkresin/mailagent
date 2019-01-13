@@ -93,6 +93,9 @@ ENDFUNC
 
 Function tmfunc
 Private i := 0, cRes, aRes, lRefr := .F., lIcon, cUnseen, cAll, oWnd
+if Empty(aBoxes)
+  return
+endif
 oWnd := HWindow():GetMain()
 lIcon := !hwg_IsWindowVisible(oWnd:handle)
 do while ++i <= Len( aBoxes )
@@ -204,12 +207,12 @@ if !Empty( oIni ) .and. !Empty( oIni:aItems )
   do while ++i <= Len( oIni:aItems[1]:aItems )
     oNode := oIni:aItems[1]:aItems[i]
     if oNode:title == "mbox"
-      Aadd( aBoxes, { oNode:GetAttribute("title","C"), ;
-        oNode:GetAttribute("address","C"), "", "", ;
-        oNode:GetAttribute("login","C"), ;
-        Iif( !Empty(cTemp:=oNode:GetAttribute("pass","C")),hb_Base64Decode(cTemp),""), ;
+      Aadd( aBoxes, { oNode:GetAttribute("title","C",""), ;
+        oNode:GetAttribute("address","C",""), "", "", ;
+        oNode:GetAttribute("login","C",""), ;
+        Iif( !Empty(cTemp:=oNode:GetAttribute("pass","C","")),hb_Base64Decode(cTemp),""), ;
         oNode:GetAttribute("refresh","N",30), ;
-        0, 0, 0, .F. } )
+        0, 0, 0, .F., oNode:GetAttribute("trash","C",""), oNode:GetAttribute("web","C","") } )
     endif
   enddo
 endif
@@ -219,7 +222,9 @@ oBmpCheck := HBitmap():AddStandard( Iif(hwg_Version(4)==0,32760,"gtk-apply") )
 ]]>
   </method>
   <method name="onDlgActivate">
-    <![CDATA[Private i := 0, oWnd
+    <![CDATA[#define ES_PASSWORD  32
+#define DS_CENTER  2048
+Private i := 0, oWnd, cPass
 oBrw2:bcolor := oBrw2:bcolorSel := oBrw2:htbColor := 15132390
 oBrw2:tColorSel := oBrw2:httColor := 0
 oBrw2:aArray := {}
@@ -243,9 +248,13 @@ oBrw1:AddColumn(HColumn():New("",{|v,o|o:aArray[o:nCurrent,4]},"C",6,0,,,2))
 oBrw1:AddColumn(HColumn():New("",{|v,o|" "},"C",1,0))
 oBrw1:aColumns[1]:aBitmaps := { { {|l|l}, oBmpMark } }
 oBrw1:bPosChanged := {||getMsgs()}
+oBrw1:bEnter := {||hwg_Shellexecute(oBrw1:aArray[oBrw1:nCurrent,13],"open",NIL,NIL,2)}
 
 do while ++i <= Len( aBoxes )
-  pGo("setbox",{LTrim(Str(i)),aBoxes[i,1],aBoxes[i,2],aBoxes[i,5],aBoxes[i,6]})
+  if Empty( cPass := aBoxes[i,6] )
+    cPass := hwg_MsgGet( aBoxes[i,1],"Input password",ES_PASSWORD,,,DS_CENTER )
+  endif
+  pGo("setbox",{LTrim(Str(i)),aBoxes[i,1],aBoxes[i,2],aBoxes[i,5],cPass,aBoxes[i,12]})
 enddo
 
 oWnd := HWindow():GetMain()
@@ -288,6 +297,8 @@ if lChgConfig
       oNode1:SetAttribute( "pass", hb_Base64Encode(aBoxes[i,6]) )
     endif
     oNode1:SetAttribute( "refresh",Ltrim(Str(aBoxes[i,7])) )
+    oNode1:SetAttribute( "trash",aBoxes[i,12] )
+    oNode1:SetAttribute( "web",aBoxes[i,13] )
     oNode:Add( oNode1 )
   enddo
   oIni:Save( "agent.ini" )
