@@ -12,8 +12,6 @@ import (
 	"sync"
 )
 
-const NMSGREAD = 5
-
 type embox struct {
 	Num     int
 	Title   string
@@ -21,6 +19,7 @@ type embox struct {
 	Login   string
 	Pass    string
 	Trash   string
+	KolMess uint32
 	Unseen  int
 	Total   int
 	LastUid uint32
@@ -69,10 +68,11 @@ func getLastMessages(i int, c *client.Client, mbox *imap.MailboxStatus) {
 
 	var sFrom string
 
+	nMsgRead := pBoxes[i].KolMess
 	from := uint32(1)
 	to := mbox.Messages
-	if mbox.Messages > (NMSGREAD - 1) {
-		from = mbox.Messages - (NMSGREAD - 1)
+	if mbox.Messages > (nMsgRead - 1) {
+		from = mbox.Messages - (nMsgRead - 1)
 	}
 	seqset := new(imap.SeqSet)
 	seqset.AddRange(from, to)
@@ -83,18 +83,28 @@ func getLastMessages(i int, c *client.Client, mbox *imap.MailboxStatus) {
 		done <- c.Fetch(seqset, []imap.FetchItem{imap.FetchEnvelope, imap.FetchFlags, imap.FetchUid}, messages)
 	}()
 
-	if pBoxes[i].Amsg == nil {
-		pBoxes[i].Amsg = make([][]string, NMSGREAD)
+	if pBoxes[i].Amsg == nil || nMsgRead != uint32(len(pBoxes[i].Amsg)) {
+		pBoxes[i].Amsg = make([][]string, nMsgRead)
 	} else {
-		for j := 0; j < NMSGREAD; j++ {
+		var j uint32
+		for j = 0; j < nMsgRead; j++ {
 			pBoxes[i].Amsg[j] = nil
 		}
 	}
-	j := NMSGREAD - 1
+	j := 0
 	for msg := range messages {
-		sFrom = msg.Envelope.Sender[0].PersonalName
-		if sFrom == "" {
-			sFrom = msg.Envelope.Sender[0].MailboxName + "@" + msg.Envelope.Sender[0].HostName
+		if len(msg.Envelope.From) > 0 {
+			sFrom = msg.Envelope.From[0].PersonalName
+			if sFrom == "" {
+				sFrom = msg.Envelope.From[0].MailboxName + "@" + msg.Envelope.From[0].HostName
+			}
+		} else if len(msg.Envelope.Sender) > 0 {
+			sFrom = msg.Envelope.Sender[0].PersonalName
+			if sFrom == "" {
+				sFrom = msg.Envelope.Sender[0].MailboxName + "@" + msg.Envelope.Sender[0].HostName
+			}
+		} else {
+			sFrom = ""
 		}
 		sUnSeen := "true"
 		for _, flag := range msg.Flags {
@@ -104,7 +114,7 @@ func getLastMessages(i int, c *client.Client, mbox *imap.MailboxStatus) {
 			}
 		}
 		pBoxes[i].Amsg[j] = []string{sFrom, msg.Envelope.Subject, fmt.Sprintf("%s", msg.Envelope.Date)[:19], sUnSeen, fmt.Sprintf("%d", msg.Uid)}
-		j--
+		j++
 	}
 
 	if err := <-done; err != nil {
@@ -175,7 +185,12 @@ func setBox(p []string) string {
 	for i > len(pBoxes) {
 		pBoxes = append(pBoxes, embox{})
 	}
-	pBoxes[i] = embox{Title: p[1], Addr: p[2], Login: p[3], Pass: p[4], Trash: p[5], Unseen: -1, Total: -1}
+	kolmess, _ := strconv.Atoi(p[6])
+	if kolmess <= 0 || kolmess > 50 {
+		kolmess = 5
+	}
+	pBoxes[i] = embox{Title: p[1], Addr: p[2], Login: p[3], Pass: p[4],
+		Trash: p[5], KolMess: uint32(kolmess), Unseen: -1, Total: -1}
 
 	return ""
 }
@@ -306,9 +321,22 @@ func getResult(p []string) string {
 
 func getMsgs(p []string) string {
 
+	var s string
 	i, _ := strconv.Atoi(p[0])
 	i--
-	return fmt.Sprintf("%s", egui.ToString(pBoxes[i].Amsg))
+	j := len(pBoxes[i].Amsg) - 1
+	for j >= 0 && pBoxes[i].Amsg[j] == nil {
+		j--
+	}
+	if j == len(pBoxes[i].Amsg) - 1 {
+		s = fmt.Sprintf("%s", egui.ToString(pBoxes[i].Amsg))
+	} else if j >= 0 {
+		s = fmt.Sprintf("%s", egui.ToString(pBoxes[i].Amsg[:(j+1)]))
+	} else {
+		s = "";
+	}
+	//egui.WriteLog(s)
+	return s
 }
 
 func delMsgs(p []string) string {
