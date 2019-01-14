@@ -4,7 +4,7 @@
     <property name="Geometry">{379,134,654,353}</property>
     <property name="Caption">[Mail agent]</property>
     <property name="Font">
-      <font name="Georgia" width="0" height="-18M3.00" weight="400" charset="204"/>
+      <font name="Georgia" width="0" height="-18M5.63" weight="400" charset="204"/>
     </property>
     <property name="FormType">[Main]</property>
     <property name="lClipper">.F.</property>
@@ -335,11 +335,11 @@ endif
         <property name="Geometry">{2,38,60,24}</property>
         <property name="Name">[oLblTime]</property>
         <property name="Caption">[]</property>
+        <property name="BackColor">13882323</property>
         <property name="font">
-          <font name="Georgia" width="0" height="-16M2.67" weight="400" charset="204"/>
+          <font name="Georgia" width="0" height="-16M5.00" weight="400" charset="204"/>
         </property>
         <property name="Justify">[Center]</property>
-        <property name="Transparent">.T.</property>
       </style>
     </part>
     <part class="ownerbutton">
