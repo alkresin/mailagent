@@ -268,7 +268,7 @@ func delMessages(i int, p []string) {
 	if !seqset.Empty() {
 		if pBoxes[i].Trash != "" {
 			if err := c.Copy(seqset, pBoxes[i].Trash); err != nil {
-				egui.WriteLog( fmt.Sprintln(err) )
+				egui.WriteLog(fmt.Sprintln(err))
 			}
 		}
 		item := imap.FormatFlagsOp(imap.AddFlags, true)
@@ -328,12 +328,12 @@ func getMsgs(p []string) string {
 	for j >= 0 && pBoxes[i].Amsg[j] == nil {
 		j--
 	}
-	if j == len(pBoxes[i].Amsg) - 1 {
+	if j == len(pBoxes[i].Amsg)-1 {
 		s = fmt.Sprintf("%s", egui.ToString(pBoxes[i].Amsg))
 	} else if j >= 0 {
 		s = fmt.Sprintf("%s", egui.ToString(pBoxes[i].Amsg[:(j+1)]))
 	} else {
-		s = "";
+		s = ""
 	}
 	//egui.WriteLog(s)
 	return s

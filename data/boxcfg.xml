@@ -196,7 +196,7 @@ if nBox == 0
   lNew := .T.
 endif
 aBox := aBoxes[nBox]
-lUpd := ( !(aBox[1] == Trim(m_title)) .or. !(aBox[2] == Trim(m_addr)) .or. !(aBox[5] == Trim(m_login)) .or. !(aBox[6] == Trim(m_pass)) .or. !(aBox[12] == Trim(m_trash)))
+lUpd := ( !(aBox[1] == Trim(m_title)) .or. !(aBox[2] == Trim(m_addr)) .or. !(aBox[5] == Trim(m_login)) .or. !(aBox[6] == Trim(m_pass)) .or. !(aBox[12] == Trim(m_trash)) .or. !(aBox[14] == m_kol) )
 aBox[1] := Trim(m_title)
 aBox[2] := Trim(m_addr)
 aBox[5] := Trim(m_login)
