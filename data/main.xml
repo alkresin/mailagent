@@ -112,12 +112,11 @@ do while ++i <= Len( aBoxes )
         aBoxes[i,9] := 0
         cUnseen := Ltrim(Str(aRes[1]))
         cAll := Ltrim(Str(aRes[2]))
-        if aBoxes[i,3] != cUnseen .or. aBoxes[i,4] != cAll .or. aBoxes[i,10] != aRes[3]
+        if aBoxes[i,3] != cUnseen .or. aBoxes[i,4] != cAll
           aBoxes[i,3] := cUnseen
           aBoxes[i,4] := cAll
-          aBoxes[i,10] := aRes[3]
           if i == oBrw1:nCurrent
-            callfunc("GETMSGS",,oForm:aFuncs)
+            getmsgs()
           endif
           lRefr := .T.
           aBoxes[i,11] := (aRes[1] > 0)
@@ -126,7 +125,7 @@ do while ++i <= Len( aBoxes )
         aBoxes[i,11] := .F.
       elseif aRes[1] == -2
         aBoxes[i,9] := 0
-        aBoxes[i,3] := aBoxes[i,4] := "error"
+        aBoxes[i,10] := 1
         if i == oBrw1:nCurrent
           oBrw2:aArray := ""
           if !lIcon
@@ -164,10 +163,10 @@ if i > 0 .and. i <= Len(aBoxes) .and. Val(aBoxes[i,4]) > 0
     j := 0
     do while ++j <= Len(aRes[1])
       if left(aRes[1,j,1],2) == "=?"
-        aRes[1,j,1] := callfunc("CNV",{aRes[1,j,1]},oForm:aFuncs)
+        aRes[1,j,1] := cnv(aRes[1,j,1])
       endif
       if left(aRes[1,j,2],2) == "=?"
-        aRes[1,j,2] := callfunc("CNV",{aRes[1,j,2]},oForm:aFuncs)
+        aRes[1,j,2] := cnv(aRes[1,j,2])
       endif
       dDate := aRes[1,j,3]
       dDate := Stod( Left(dDate,4)+Substr(dDate,6,2)+Substr(dDate,9,2) )
@@ -248,8 +247,8 @@ oBrw1:bcolorSel := oBrw1:htbColor := 8404992
 oBrw1:aArray := aBoxes
 oBrw1:AddColumn(HColumn():New("",{|v,o|o:aArray[o:nCurrent,11]},"L",1,0))
 oBrw1:AddColumn(HColumn():New("",{|v,o|o:aArray[o:nCurrent,1]},"C",24,0))
-oBrw1:AddColumn(HColumn():New("",{|v,o|o:aArray[o:nCurrent,3]},"C",6,0,,,2))
-oBrw1:AddColumn(HColumn():New("",{|v,o|o:aArray[o:nCurrent,4]},"C",6,0,,,2))
+oBrw1:AddColumn(HColumn():New("",{|v,o|Iif(Empty(o:aArray[o:nCurrent,10]),o:aArray[o:nCurrent,3],"error")},"C",6,0,,,2))
+oBrw1:AddColumn(HColumn():New("",{|v,o|Iif(Empty(o:aArray[o:nCurrent,10]),o:aArray[o:nCurrent,4],"error")},"C",6,0,,,2))
 oBrw1:AddColumn(HColumn():New("",{|v,o|" "},"C",1,0))
 oBrw1:aColumns[1]:aBitmaps := { { {|l|l}, oBmpMark } }
 oBrw1:bPosChanged := {||getMsgs()}

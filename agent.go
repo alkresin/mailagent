@@ -212,7 +212,7 @@ func checkMessages(i int) {
 	pBoxes[i].mux.Unlock()
 
 	if sErr != "" {
-		egui.WriteLog(sErr)
+		egui.WriteLog(pBoxes[i].Title+": "+sErr)
 	}
 }
 
@@ -268,7 +268,7 @@ func delMessages(i int, p []string) {
 	if !seqset.Empty() {
 		if pBoxes[i].Trash != "" {
 			if err := c.Copy(seqset, pBoxes[i].Trash); err != nil {
-				egui.WriteLog(fmt.Sprintln(err))
+				egui.WriteLog(pBoxes[i].Title+": "+fmt.Sprintln(err))
 			}
 		}
 		item := imap.FormatFlagsOp(imap.AddFlags, true)
@@ -359,7 +359,7 @@ func delMsgs(p []string) string {
 	pBoxes[i].mux.Unlock()
 
 	if sErr != "" {
-		egui.WriteLog(sErr)
+		egui.WriteLog(pBoxes[i].Title+": "+sErr)
 	}
 	return ""
 }
