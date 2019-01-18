@@ -12,6 +12,10 @@ The Mailagent is written in Golang and have the following dependencies:
 
  Ready binary package for Windows with the GuiServer included may be downloaded from http://www.kresin.ru/en/guisrv.html
 
+<p align="center" markdown="1">
+  <img src="screenshot/mailagent_01.png" />
+</p>
+
 ### Adding a mailbox
 To add a mailbox to the list you need to click on the menu button in a left upper corner and to select the 'Add mailbox' menu item.
 Then input the following items in a dialog box:
