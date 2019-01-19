@@ -110,6 +110,7 @@ do while ++i <= Len( aBoxes )
       hb_jsonDecode( cRes, @aRes )
       if aRes[1] >= 0
         aBoxes[i,9] := 0
+        aBoxes[i,10] := 0
         cUnseen := Ltrim(Str(aRes[1]))
         cAll := Ltrim(Str(aRes[2]))
         if aBoxes[i,3] != cUnseen .or. aBoxes[i,4] != cAll
