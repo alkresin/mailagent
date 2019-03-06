@@ -11,7 +11,7 @@
     <property name="lExitOnEnter">.F.</property>
     <property name="lDebug">.F.</property>
     <property name="Variables">
-{oForm,cFormPath,aBoxes,nInterval,lChgConfig,oMenuTray,lNewItems,oIcon2,oBmpMark,oBmpCheck,oMenu}
+{oForm,cFormPath,aBoxes,nInterval,lMinimize,lChgConfig,oMenuTray,lNewItems,oIcon2,oBmpMark,oBmpCheck,oMenu}
     </property>
     <property name="FromStyle">[Popup]</property>
     <property name="Icon">[images/mail]</property>
@@ -203,6 +203,7 @@ oForm := o
 SET DATE FORMAT "dd.mm.yy"
 cFormPath := hb_fnameDir(oForm:cFormName)
 nInterval := 2
+lMinimize := .F.
 lChgConfig := .F.
 lNewItems := .F.
 aBoxes := {}
@@ -218,6 +219,8 @@ if !Empty( oIni ) .and. !Empty( oIni:aItems )
         oNode:GetAttribute("refresh","N",30), ;
         0, 0, 0, .F., oNode:GetAttribute("trash","C",""), oNode:GetAttribute("web","C",""), ;
         oNode:GetAttribute("kol","N",5) } )
+    elseif oNode:title == "onstart"
+      lMinimize := oNode:GetAttribute("minimize","L",.F.)
     endif
   enddo
 endif
@@ -252,6 +255,7 @@ oBrw1:AddColumn(HColumn():New("",{|v,o|Iif(Empty(o:aArray[o:nCurrent,10]),o:aArr
 oBrw1:AddColumn(HColumn():New("",{|v,o|Iif(Empty(o:aArray[o:nCurrent,10]),o:aArray[o:nCurrent,4],"error")},"C",6,0,,,2))
 oBrw1:AddColumn(HColumn():New("",{|v,o|" "},"C",1,0))
 oBrw1:aColumns[1]:aBitmaps := { { {|l|l}, oBmpMark } }
+oBrw1:lInFocus := .T.
 oBrw1:bPosChanged := {||getMsgs()}
 oBrw1:bEnter := {||hwg_Shellexecute(oBrw1:aArray[oBrw1:nCurrent,13],"open",NIL,NIL,2)}
 
@@ -283,7 +287,9 @@ oMenuTray := Hwg_ContextMenu()
 Hwg_EndMenu()
 
 oWnd:InitTray( oWnd:oIcon,{||RestoreWin()},oMenuTray,"Mail agent" )
-
+if lMinimize
+  oWnd:Minimize()
+endif
 HTimer():New( ,, nInterval*1000, {||tmfunc()} )
 tmfunc(oBrw1)
 ]]>
