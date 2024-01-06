@@ -224,7 +224,9 @@ if !Empty( oIni ) .and. !Empty( oIni:aItems )
     endif
   enddo
 endif
-oIcon2 := HIcon():AddFile("images/mail2")
+if !hb_version(20)
+  oIcon2 := HIcon():AddFile("images/mail2")
+endif
 oBmpMark := HBitmap():AddFile("images/mark.bmp")
 oBmpCheck := HBitmap():AddStandard( Iif(hwg_Version(4)==0,32760,"gtk-apply") )
 ]]>
@@ -251,8 +253,8 @@ oBrw1:bcolorSel := oBrw1:htbColor := 8404992
 oBrw1:aArray := aBoxes
 oBrw1:AddColumn(HColumn():New("",{|v,o|o:aArray[o:nCurrent,11]},"L",1,0))
 oBrw1:AddColumn(HColumn():New("",{|v,o|o:aArray[o:nCurrent,1]},"C",24,0))
-oBrw1:AddColumn(HColumn():New("",{|v,o|Iif(Empty(o:aArray[o:nCurrent,10]),o:aArray[o:nCurrent,3],"error")},"C",6,0,,,2))
-oBrw1:AddColumn(HColumn():New("",{|v,o|Iif(Empty(o:aArray[o:nCurrent,10]),o:aArray[o:nCurrent,4],"error")},"C",6,0,,,2))
+oBrw1:AddColumn(HColumn():New("",{|v,o|Iif(Empty(o:aArray[o:nCurrent,10]),o:aArray[o:nCurrent,3]+"=","error")},"C",7,0,,,2))
+oBrw1:AddColumn(HColumn():New("",{|v,o|Iif(Empty(o:aArray[o:nCurrent,10]),o:aArray[o:nCurrent,4]+"=","error")},"C",7,0,,,2))
 oBrw1:AddColumn(HColumn():New("",{|v,o|" "},"C",1,0))
 oBrw1:aColumns[1]:aBitmaps := { { {|l|l}, oBmpMark } }
 oBrw1:lInFocus := .T.
